@@ -1,0 +1,22 @@
+services:
+  dev:
+    build: .
+    volumes:
+      - type: bind
+        source: .
+        target: /mnt/blog
+    working_dir: /mnt/blog
+    network_mode: host
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  serve:
+    build: .
+    volumes:
+      - type: bind
+        source: .
+        target: /mnt/blog
+    working_dir: /mnt/blog
+    network_mode: host
+    command: npm run dev
