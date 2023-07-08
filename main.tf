@@ -23,6 +23,7 @@ resource "aws_amplify_app" "app" {
   name = local.project_name
   repository = local.repo
   access_token = var.github_pat
+  build_spec = file("${path.module}/amplify.yml")
 }
 
 resource "aws_amplify_branch" "branch" {
