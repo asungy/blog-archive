@@ -13,11 +13,21 @@ provider "aws" {
   secret_key = var.aws_secret_key
 }
 
-resource "aws_instance" "app_server" {
-  ami           = "ami-053b0d53c279acc90"
-  instance_type = "t2.micro"
+locals {
+  project_name = "Blog"
+  repo = "https://github.com/asungy/blog"
+  branch = "2-set-up-terraform"
+}
 
-  tags = {
-    Name = "Blog"
-  }
+resource "aws_amplify_app" "app" {
+  name = local.project_name
+  repository = local.repo
+  access_token = var.github_pat
+}
+
+resource "aws_amplify_branch" "branch" {
+  app_id = aws_amplify_app.app.id
+  branch_name = local.branch
+  framework = "Next"
+  stage = "PULL_REQUEST"
 }

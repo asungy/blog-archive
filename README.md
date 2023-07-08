@@ -9,19 +9,33 @@ The following need to be installed for deployment:
 - [AWS CLI][aws_cli_install]
 - [Terraform][terraform_install]
 
-## AWS Access Keys
-In order to deploy to AWS, Terraform needs to be provided with AWS access keys.
+## Credentials
+In order to deploy to AWS, Terraform needs to be provided with necessary access
+keys and tokens to create appropriate resources. The following credentials
+needs to be provided:
+- AWS access key ID
+- AWS secret key
+- GitHub personal access token
+
 Access key information can be provided by creating a file called `keys.tf`
 (specified by _.gitignore_ to be omitted from commit history):
 ```terraform
 variable "aws_access_key" {
   type = string
   default = "<access-key-id>"
+  sensitive = true
 }
 
 variable "aws_secret_key" {
   type = string
   default = "<secret-key>"
+  sensitive = true
+}
+
+variable "github_pat" {
+  description = "GitHub Personal Access Token"
+  default = "<personal-access-token>"
+  sensitive = true
 }
 ```
 
