@@ -15,8 +15,12 @@ services:
     build: .
     volumes:
       - type: bind
-        source: .
+        source: ./blog
         target: /mnt/blog
     working_dir: /mnt/blog
     network_mode: host
-    command: npm run dev
+    command: >
+      /bin/bash -c "npm install -g npm@latest
+      && npm install
+      && npm run dev
+      "

@@ -31,12 +31,6 @@ variable "aws_secret_key" {
   default = "<secret-key>"
   sensitive = true
 }
-
-variable "github_pat" {
-  description = "GitHub Personal Access Token"
-  default = "<personal-access-token>"
-  sensitive = true
-}
 ```
 
 ## Steps
