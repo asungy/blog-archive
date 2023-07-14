@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "npx tsc",
+    "exec": "node ./out/main.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
+}
