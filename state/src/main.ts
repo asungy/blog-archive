@@ -1,5 +1,7 @@
+import { run as cli_run } from "./cli";
+
 function main() {
-  console.log("Hello world");
+  cli_run();
 }
 
 main();
