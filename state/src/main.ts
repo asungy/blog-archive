@@ -1,7 +1,10 @@
 import { run as cli_run } from "./cli";
+import { fileURLToPath } from "url";
 
-function main() {
+const main = async () => {
   cli_run();
-}
+};
 
-main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main();
+}

@@ -1,6 +1,7 @@
 import { program } from "commander";
+import { example as s3_example } from "./s3";
 
-function example() {
+function commander_example() {
   program
     .option("--first")
     .option("-s, --separator <char>");
@@ -13,5 +14,5 @@ function example() {
 }
 
 export function run() {
-  example();
+  s3_example();
 }
