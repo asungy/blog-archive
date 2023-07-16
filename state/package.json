@@ -1,9 +1,11 @@
 {
   "scripts": {
-    "build": "npx tsc",
-    "exec": "node ./out/main.js"
+    "build": "npx ncc build ./src/main.ts -o ./out",
+    "exec": "node ./out/index.js",
+    "clean": "rm -fr ./out"
   },
   "devDependencies": {
+    "@vercel/ncc": "^0.36.1",
     "typescript": "^5.1.6"
   },
   "dependencies": {

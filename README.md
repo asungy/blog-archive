@@ -5,6 +5,10 @@ This is a starter template for [Learn Next.js](https://nextjs.org/learn).
 This site can be deployed by [Terraform][terraform] on AWS.
 
 ## Prerequisites
+
+### Setup State Bucket
+
+### Tooling
 The following need to be installed for deployment:
 - [AWS CLI][aws_cli_install]
 - [Terraform][terraform_install]
