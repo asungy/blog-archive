@@ -1,5 +1,6 @@
 import {
   CreateBucketCommand,
+  DeleteObjectsCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -75,6 +76,35 @@ async function list_objects_example() {
   }
 }
 
+async function delete_objects_example() {
+  const s3Client = new S3Client({ region: "us-east-1" });
+  const command = new DeleteObjectsCommand({
+    Bucket: BUCKET,
+    Delete: {
+      Objects: []
+    },
+  });
+}
+
+const DEFAULT_REGION = "us-east-1";
+
+export class S3Bucket {
+  private readonly name: string;
+  private readonly region: string;
+
+  constructor(name: string, region: string = DEFAULT_REGION) {
+    this.name = name;
+    this.region = region;
+
+
+  }
+
+  get created(): boolean {
+    return false;
+  }
+}
+
 export function example() {
-  list_objects_example();
+  // create_bucket_example();
+  // delete_objects_example();
 }
