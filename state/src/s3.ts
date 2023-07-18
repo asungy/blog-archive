@@ -6,6 +6,8 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 
+import { Result, Void } from "./result";
+
 const uuid = "d0d70723-6e50-4941-bea6-499a162e8a7e";
 const BUCKET = `test-bucket-${uuid}`;
 
@@ -90,17 +92,25 @@ const DEFAULT_REGION = "us-east-1";
 
 export class S3Bucket {
   private readonly name: string;
-  private readonly region: string;
+  private readonly client: S3Client;
 
   constructor(name: string, region: string = DEFAULT_REGION) {
     this.name = name;
-    this.region = region;
-
-
+    this.client = new S3Client({
+      region,
+    });
   }
 
-  get created(): boolean {
-    return false;
+  async init(): Promise<Result<Void | null, any>> {
+    try {
+      let data = await this.client.send(
+        new CreateBucketCommand({ Bucket: this.name })
+      );
+      console.log("Successfully created a bucket called ", data.Location);
+      return new Result(new Void());
+    } catch (err) {
+      return new Result(null, err);
+    }
   }
 }
 
