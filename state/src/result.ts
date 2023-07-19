@@ -23,6 +23,17 @@ export class Result<T, U> {
     return this.error !== null;
   }
 
+  unwrap(): T {
+    if (this.is_ok()) {
+      // @ts-expect-error
+      //
+      // This can error can be ignored because the `ok` value is already verified to not be null.
+      return this.ok;
+    }
+
+    throw new Error(`Attempted to unwrap result with error: ${this.error}`);
+  }
+
   // Applies a specified function to an `ok` value. Otherwise, `undefined` is returned.
   map<V>(f: (a: T | null) => V): V | undefined {
     if (this.is_ok()) {

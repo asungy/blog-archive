@@ -11,41 +11,6 @@ import { Result, Void } from "./result";
 const uuid = "d0d70723-6e50-4941-bea6-499a162e8a7e";
 const BUCKET = `test-bucket-${uuid}`;
 
-async function create_bucket_example() {
-  const params = {
-    Bucket: BUCKET,
-    Key: "my_file.txt",
-    Body: "Hello world!",
-  };
-
-  const s3Client = new S3Client({ region: "us-east-1" });
-  // Create an Amazon S3 bucket.
-  try {
-    const data = await s3Client.send(
-      new CreateBucketCommand({ Bucket: params.Bucket })
-    );
-    console.log(data);
-    console.log("Successfully created a bucket called ", data.Location);
-  } catch (err) {
-    console.log("Error", err);
-  }
-  // Create an object and upload it to the Amazon S3 bucket.
-  try {
-    const results = await s3Client.send(new PutObjectCommand(params));
-    console.log(
-      "Successfully created " +
-      params.Key +
-      " and uploaded it to " +
-      params.Bucket +
-      "/" +
-      params.Key
-    );
-    return results;
-  } catch (err) {
-    console.log("Error", err);
-  }
-}
-
 async function list_objects_example() {
   const command = new ListObjectsV2Command({
     Bucket: BUCKET,
@@ -89,6 +54,7 @@ async function delete_objects_example() {
 }
 
 const DEFAULT_REGION = "us-east-1";
+const DEFAULT_MAX_KEYS = 1000;
 
 export class S3Bucket {
   private readonly name: string;
@@ -103,6 +69,7 @@ export class S3Bucket {
 
   async init(): Promise<Result<Void | null, any>> {
     try {
+      // Note: This command succeeds if the bucket already exists.
       let data = await this.client.send(
         new CreateBucketCommand({ Bucket: this.name })
       );
@@ -112,9 +79,45 @@ export class S3Bucket {
       return new Result(null, err);
     }
   }
-}
 
-export function example() {
-  // create_bucket_example();
-  // delete_objects_example();
+  async delete(): Promise<Result<Void | null, any>> {
+    let objects = (await this.list_objects()).unwrap();
+    console.log(`objects: ${objects}`);
+
+    return new Result(new Void());
+  }
+
+  private async list_objects(): Promise<Result<string[] | null, any>> {
+    const command = new ListObjectsV2Command({
+      Bucket: this.name,
+      MaxKeys: DEFAULT_MAX_KEYS,
+    });
+
+    try {
+      let isTruncated = true;
+      let contents: string[] = [];
+
+      while (isTruncated) {
+        const {
+          Contents,
+          IsTruncated,
+          NextContinuationToken
+        } = await this.client.send(command);
+
+        for (const c in Contents!) {
+          // @ts-expect-error
+          //
+          // tsc is being stupid here.
+          contents.push(c.Key);
+        }
+
+        isTruncated = IsTruncated!;
+        command.input.ContinuationToken = NextContinuationToken;
+      }
+      return new Result(contents, null);
+    } catch (err) {
+      return new Result(null, err);
+    }
+
+  }
 }

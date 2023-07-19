@@ -1,5 +1,4 @@
 import { program } from "commander";
-import { example as s3_example } from "./s3";
 
 function commander_example() {
   program
@@ -14,5 +13,4 @@ function commander_example() {
 }
 
 export function run() {
-  s3_example();
 }
