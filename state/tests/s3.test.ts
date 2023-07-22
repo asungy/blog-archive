@@ -1,4 +1,4 @@
-import { S3Bucket } from "../src/s3";
+import { S3Bucket } from "../src/aws/s3";
 import { cwd } from "node:process";
 
 const path = require("path");

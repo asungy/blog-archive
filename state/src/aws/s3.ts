@@ -29,7 +29,7 @@ export class S3Bucket {
       let data = await this.client.send(
         new CreateBucketCommand({ Bucket: this.name })
       );
-      console.log("Successfully created a bucket called ", data.Location);
+      console.log(`Successfully created a bucket called ${data.Location}`);
     } catch (err) {
       throw new Error(`Error creating bucket: ${err}`);
     }
@@ -45,23 +45,9 @@ export class S3Bucket {
 
     try {
       await this.client.send(command);
+      console.log(`Successfully deleted bucket called: ${this.name}`);
     } catch (err) {
       throw new Error(`Error deleting bucket: ${err}`);
-    }
-  }
-
-  async delete_objects(objects: string[]): Promise<void> {
-    const command = new DeleteObjectsCommand({
-      Bucket: this.name,
-      Delete: {
-        Objects: objects.map((key) => ({ Key: key })),
-      },
-    });
-
-    try {
-      await this.client.send(command);
-    } catch (err) {
-      throw new Error(`Error deleting objects: ${err}`);
     }
   }
 
@@ -83,6 +69,21 @@ export class S3Bucket {
 
     } catch (err) {
       throw new Error(`Error adding object: ${err}`);
+    }
+  }
+
+  private async delete_objects(objects: string[]): Promise<void> {
+    const command = new DeleteObjectsCommand({
+      Bucket: this.name,
+      Delete: {
+        Objects: objects.map((key) => ({ Key: key })),
+      },
+    });
+
+    try {
+      await this.client.send(command);
+    } catch (err) {
+      throw new Error(`Error deleting objects: ${err}`);
     }
   }
 
