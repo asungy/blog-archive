@@ -1,4 +1,4 @@
-# Terraform State Management Tool
+# Terraform State Bucket Tool
 
 This tool allows for easy management of the AWS S3 bucket that contains
 Terraform state files for this blog.

@@ -1,57 +1,13 @@
 import {
   CreateBucketCommand,
+  DeleteBucketCommand,
   DeleteObjectsCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 
-import { Result, Void } from "./result";
-
-const uuid = "d0d70723-6e50-4941-bea6-499a162e8a7e";
-const BUCKET = `test-bucket-${uuid}`;
-
-async function list_objects_example() {
-  const command = new ListObjectsV2Command({
-    Bucket: BUCKET,
-    MaxKeys: 1000,
-  });
-
-  const s3Client = new S3Client({ region: "us-east-1" });
-
-  try {
-    let isTruncated = true;
-
-    console.log("Bucket contains the following objects:\n");
-    let contents = "";
-
-    while (isTruncated) {
-      const {
-        Contents,
-        IsTruncated,
-        NextContinuationToken
-      } = await s3Client.send(command);
-      const contentsList = Contents!.map((c) => ` - ${c.Key}`).join("\n");
-      contents += contentsList + "\n";
-      isTruncated = IsTruncated!;
-      command.input.ContinuationToken = NextContinuationToken;
-    }
-    console.log(contents);
-
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-async function delete_objects_example() {
-  const s3Client = new S3Client({ region: "us-east-1" });
-  const command = new DeleteObjectsCommand({
-    Bucket: BUCKET,
-    Delete: {
-      Objects: []
-    },
-  });
-}
+const fs = require("fs/promises");
 
 const DEFAULT_REGION = "us-east-1";
 const DEFAULT_MAX_KEYS = 1000;
@@ -67,27 +23,70 @@ export class S3Bucket {
     });
   }
 
-  async init(): Promise<Result<Void | null, any>> {
+  async init(): Promise<void> {
     try {
       // Note: This command succeeds if the bucket already exists.
       let data = await this.client.send(
         new CreateBucketCommand({ Bucket: this.name })
       );
       console.log("Successfully created a bucket called ", data.Location);
-      return new Result(new Void());
     } catch (err) {
-      return new Result(null, err);
+      throw new Error(`Error creating bucket: ${err}`);
     }
   }
 
-  async delete(): Promise<Result<Void | null, any>> {
-    let objects = (await this.list_objects()).unwrap();
-    console.log(`objects: ${objects}`);
+  async delete(): Promise<void> {
+    let objects = await this.list_objects();
+    await this.delete_objects(objects);
 
-    return new Result(new Void());
+    const command = new DeleteBucketCommand({
+      Bucket: this.name,
+    });
+
+    try {
+      await this.client.send(command);
+    } catch (err) {
+      throw new Error(`Error deleting bucket: ${err}`);
+    }
   }
 
-  private async list_objects(): Promise<Result<string[] | null, any>> {
+  async delete_objects(objects: string[]): Promise<void> {
+    const command = new DeleteObjectsCommand({
+      Bucket: this.name,
+      Delete: {
+        Objects: objects.map((key) => ({ Key: key })),
+      },
+    });
+
+    try {
+      await this.client.send(command);
+    } catch (err) {
+      throw new Error(`Error deleting objects: ${err}`);
+    }
+  }
+
+  async add_object(key: string, pathlike: string): Promise<void> {
+    try {
+      const data = await fs.readFile(pathlike, { encoding: "utf8" });
+
+      const command = new PutObjectCommand({
+        Bucket: this.name,
+        Key: key,
+        Body: data,
+      });
+
+      const response = await this.client.send(command);
+
+      if (response.$metadata.httpStatusCode !== 200) {
+        console.error(`add_object response: ${response}`);
+      }
+
+    } catch (err) {
+      throw new Error(`Error adding object: ${err}`);
+    }
+  }
+
+  private async list_objects(): Promise<string[]> {
     const command = new ListObjectsV2Command({
       Bucket: this.name,
       MaxKeys: DEFAULT_MAX_KEYS,
@@ -104,20 +103,14 @@ export class S3Bucket {
           NextContinuationToken
         } = await this.client.send(command);
 
-        for (const c in Contents!) {
-          // @ts-expect-error
-          //
-          // tsc is being stupid here.
-          contents.push(c.Key);
-        }
+        Contents!.map((c) => contents.push(c.Key!));
 
         isTruncated = IsTruncated!;
         command.input.ContinuationToken = NextContinuationToken;
       }
-      return new Result(contents, null);
+      return contents;
     } catch (err) {
-      return new Result(null, err);
+      throw new Error(`Error listing objects: ${err}`);
     }
-
   }
 }
